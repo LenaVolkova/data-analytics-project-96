@@ -43,7 +43,7 @@ select
 	leads.status_id
 from sessions
 left join leads on sessions.visitor_id = leads.visitor_id
-left join last_paid_sessions
+join last_paid_sessions
 	on sessions.visitor_id = last_paid_sessions.visitor_id
 order by leads.amount desc nulls last,
 	last_paid_sessions.visit_date,
