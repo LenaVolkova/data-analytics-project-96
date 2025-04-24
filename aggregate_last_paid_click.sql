@@ -44,6 +44,18 @@ purchases as (
 	where (closing_reason = 'Успешно реализовано' or status_id = '142') 
 	and date_trunc('day', visit_date) = date_trunc('day', leads.created_at)
 	group by date_trunc('day', visit_date), utm_source, utm_medium, utm_campaign
+),
+leads_counts as (
+	select
+		date_trunc('day', visit_date) as visit_date,
+		utm_source,
+		utm_medium, 
+		utm_campaign,
+		count(lead_id) as leads_count
+	from last_paid_sessions 
+	join leads on last_paid_sessions.visitor_id = leads.visitor_id
+	and date_trunc('day', visit_date) = date_trunc('day', leads.created_at)
+	group by date_trunc('day', visit_date), utm_source, utm_medium, utm_campaign
 )
 select 
 	date_trunc('day',sessions.visit_date) as visit_date,
@@ -52,11 +64,15 @@ select
 	campaign as utm_campaign,
 	count(sessions.visitor_id) as visitors_count,
 	coalesce(vk_ads.daily_spent, 0) + coalesce(ya_ads.daily_spent, 0) as total_cost,
-	count(lead_id) as leads_count,
+	coalesce(leads_count, 0) as leads_count,
 	coalesce(purchases_count, 0) as purchases_count,
 	coalesce(revenue, 0) as revenue
 from sessions
-join leads on sessions.visitor_id = leads.visitor_id
+left join leads_counts on 
+	date_trunc('day', sessions.visit_date) = leads_counts.visit_date and 
+	sessions.source = leads_counts.utm_source and
+	sessions.medium = leads_counts.utm_medium and
+	sessions.campaign  = leads_counts.utm_campaign
 left join vk_ads on 
 	date_trunc('day', sessions.visit_date) = vk_ads.campaign_date and 
 	sessions.source = vk_ads.utm_source and
@@ -74,7 +90,6 @@ left join purchases on
 	sessions.source = purchases.utm_source and
 	sessions.medium = purchases.utm_medium and
 	sessions.campaign  = purchases.utm_campaign
-where date_trunc('day', sessions.visit_date) = date_trunc('day',leads.created_at)
-group by date_trunc('day', sessions.visit_date), source, medium, campaign, total_cost, purchases_count, revenue
+group by date_trunc('day', sessions.visit_date), source, medium, campaign, total_cost, leads_count, purchases_count, revenue
 order by revenue desc, visit_date, visitors_count desc, utm_source, utm_medium, utm_campaign;
 
