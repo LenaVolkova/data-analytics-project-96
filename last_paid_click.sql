@@ -24,7 +24,7 @@ last_date as (
 )
 select 
 	last_date.visitor_id,
-	last_date.last_visit_date,
+	last_date.last_visit_date as visit_date,
 	paid_clicks.utm_source,
 	paid_clicks.utm_medium,
 	paid_clicks.utm_campaign,
@@ -36,6 +36,5 @@ select
 from paid_clicks
 join last_date on paid_clicks.visitor_id = last_date.visitor_id
 where paid_clicks.visit_date = last_date.last_visit_date
-order by amount desc nulls last, visit_date, utm_source, utm_medium, utm_campaign
-limit 10;
+order by amount desc nulls last, visit_date, utm_source, utm_medium, utm_campaign;
 
