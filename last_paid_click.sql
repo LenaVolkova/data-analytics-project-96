@@ -1,7 +1,3 @@
-/*
-amount — от большего к меньшему, null записи идут последними
-visit_date — от ранних к поздним
-utm_source, utm_medium, utm_campaign — в алфавитном порядкеl */
 with paid_clicks as (
 	select 
 		s.visitor_id,
@@ -15,9 +11,9 @@ with paid_clicks as (
 		l.closing_reason,
 		l.status_id
 	from sessions s
-	join leads l on s.visitor_id = l.visitor_id
+	left join leads l on s.visitor_id = l.visitor_id
 	where s.medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
-		and s.visit_date <= l.created_at
+		and ((s.visit_date <= l.created_at) or (l.created_at is null))
 )
 select 
 	distinct visitor_id,
