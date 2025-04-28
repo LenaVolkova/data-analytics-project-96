@@ -14,30 +14,28 @@ with paid_clicks as (
 	left join leads l on s.visitor_id = l.visitor_id
 	where s.medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
 		and ((s.visit_date <= l.created_at) or (l.created_at is null))
+),
+last_date as (
+	select
+		visitor_id,
+		max(visit_date) as last_visit_date
+	from paid_clicks 
+	group by visitor_id
 )
 select 
-	distinct visitor_id,
-	last_value(visit_date) over (
-			partition by visitor_id
-			order by visit_date
-			) as visit_date,
-	last_value(utm_source) over (
-			partition by visitor_id
-			order by visit_date
-			) as utm_source,	
-	last_value(utm_medium) over (
-			partition by visitor_id
-			order by visit_date
-			) as utm_medium,
-	last_value(utm_campaign) over (
-			partition by visitor_id
-			order by visit_date
-			) as utm_campaign,
-	lead_id,
-	created_at,
-	amount,
-	closing_reason,
-	status_id
+	last_date.visitor_id,
+	last_date.last_visit_date,
+	paid_clicks.utm_source,
+	paid_clicks.utm_medium,
+	paid_clicks.utm_campaign,
+	paid_clicks.lead_id,
+	paid_clicks.created_at,
+	paid_clicks.amount,
+	paid_clicks.closing_reason,
+	paid_clicks.status_id
 from paid_clicks
-order by amount desc nulls last, visit_date, utm_source, utm_medium, utm_campaign;
+join last_date on paid_clicks.visitor_id = last_date.visitor_id
+where paid_clicks.visit_date = last_date.last_visit_date
+order by amount desc nulls last, visit_date, utm_source, utm_medium, utm_campaign
+limit 10;
 
