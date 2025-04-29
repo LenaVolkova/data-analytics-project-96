@@ -13,7 +13,7 @@ with paid_clicks as (
 	from sessions s
 	left join leads l on s.visitor_id = l.visitor_id
 	where s.medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
-		and ((s.visit_date <= l.created_at) or (l.created_at is null))
+		--and ((s.visit_date <= l.created_at) or (l.created_at is null))
 ),
 last_date as (
 	select
@@ -21,7 +21,7 @@ last_date as (
 		max(visit_date) as last_visit_date
 	from paid_clicks 
 	group by visitor_id
-), 
+),
 last_paid_clicks as (
 	select 
 		last_date.visitor_id,
@@ -39,66 +39,68 @@ last_paid_clicks as (
 	where paid_clicks.visit_date = last_date.last_visit_date
 	order by amount desc nulls last, visit_date, utm_source, utm_medium, utm_campaign
 ),
-costs as (
-	SELECT
-  		ad_id,
-  		campaign_id,
-  		campaign_name,
-  		utm_source,
-  		utm_medium,
-  		utm_campaign,
-  		utm_content,
-  		campaign_date,
-  		daily_spent
-	from vk_ads 
-	UNION all
-	select * from ya_ads
-),
 purchases as (
 	select
-		date_trunc('day', visit_date) as visit_date,
+		to_char(visit_date, 'YYYY-MM-DD') as visit_date,
 		utm_source,
 		utm_medium,
 		utm_campaign,
 		count(lead_id) as purchases_count,
 		sum(amount) as revenue
 	from last_paid_clicks
-	where last_paid_clicks.status_id = '142'
-	group by date_trunc('day', visit_date), utm_source, utm_medium, utm_campaign
-), 
-visitors as (
-	select
-		date_trunc('day', visit_date) as visit_date,
-		source as utm_source,
-		medium as utm_medium,
-		campaign as utm_campaign,
-		count(visitor_id) as visitors_count
-	from sessions
-	group by date_trunc('day', visit_date), utm_source, utm_medium, utm_campaign
+	where status_id = '142'
+	group by to_char(visit_date, 'YYYY-MM-DD'), utm_source, utm_medium, utm_campaign
+),
+costs as (
+	select 
+		ad_id,
+		campaign_id,
+		campaign_name,
+		utm_source,
+		utm_medium,
+		utm_campaign,
+		utm_content,
+		campaign_date,
+		daily_spent
+	from vk_ads
+	union all
+	select * from ya_ads
+),
+costs_by_day as (
+	select 
+		to_char(campaign_date, 'YYYY-MM-DD') as visit_date,
+		sum(daily_spent) as total_cost,
+		utm_source,
+		utm_medium,
+		utm_campaign
+	from costs
+	group by to_char(campaign_date, 'YYYY-MM-DD'), utm_source, utm_medium, utm_campaign
 )
-select 
-	date_trunc('day', lpc.visit_date) as visit_date,
+select
+	to_char(lpc.visit_date, 'YYYY-MM-DD') as visit_date,
+	count(lpc.visitor_id) as visitors_count,
 	lpc.utm_source,
 	lpc.utm_medium,
 	lpc.utm_campaign,
-	v.visitors_count,
-	sum(c.daily_spent) as total_cost,
+	coalesce(c.total_cost, 0) as total_cost,
 	count(lpc.lead_id) as leads_count,
 	p.purchases_count,
 	p.revenue
 from last_paid_clicks lpc
-left join costs c on date_trunc('day', lpc.visit_date) = c.campaign_date and 
-	lpc.utm_source = c.utm_source and 
-	lpc.utm_medium = c.utm_medium and 
-	lpc.utm_campaign = c.utm_campaign
-left join purchases p on date_trunc('day', lpc.visit_date) = p.visit_date  and 
-	lpc.utm_source = p.utm_source and 
-	lpc.utm_medium = p.utm_medium and 
-	lpc.utm_campaign = p.utm_campaign
-left join visitors v on date_trunc('day', lpc.visit_date) = v.visit_date and 
-	lpc.utm_source = v.utm_source and 
-	lpc.utm_medium = v.utm_medium and 
-	lpc.utm_campaign = v.utm_campaign
-group by date_trunc('day', lpc.visit_date), lpc.utm_source, lpc.utm_medium, lpc.utm_campaign, v.visitors_count, p.purchases_count, p.revenue
-order by p.revenue desc nulls last, date_trunc('day', lpc.visit_date), visitors_count desc, utm_source, utm_medium, utm_campaign;
-
+left join purchases p on to_char(lpc.visit_date, 'YYYY-MM-DD') = p.visit_date
+	and lpc.utm_source = p.utm_source
+	and lpc.utm_medium = p.utm_medium
+	and lpc.utm_campaign = p.utm_campaign
+left join costs_by_day c 
+	on to_char(lpc.visit_date, 'YYYY-MM-DD') = c.visit_date
+	and lpc.utm_source = c.utm_source
+	and lpc.utm_medium = c.utm_medium
+	and lpc.utm_campaign = c.utm_campaign
+group by to_char(lpc.visit_date, 'YYYY-MM-DD'), lpc.utm_source, lpc.utm_medium,
+	lpc.utm_campaign,	p.purchases_count, coalesce(c.total_cost, 0),
+	p.revenue
+order by revenue desc nulls last, to_char(lpc.visit_date, 'YYYY-MM-DD'),
+	count(lpc.visitor_id) desc, lpc.utm_source,
+	lpc.utm_medium,
+	lpc.utm_campaign
+limit 15;
