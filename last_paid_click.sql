@@ -55,7 +55,7 @@ order by amount desc nulls last, visit_date, utm_source, utm_medium, utm_campaig
 	from sessions s
 	left join leads l on s.visitor_id = l.visitor_id
 	where s.medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
-	/*	and ((s.visit_date <= l.created_at) or (l.created_at is null))*/
+	--	and ((s.visit_date <= l.created_at) or (l.created_at is null))
 	order by visitor_id, visit_date
 )
 select 
@@ -75,7 +75,6 @@ select
 from paid_clicks
 order by amount desc nulls last, visit_date, utm_source, utm_medium, utm_campaign
 limit 10;
-
  */
 
 
