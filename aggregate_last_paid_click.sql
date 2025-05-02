@@ -82,8 +82,8 @@ select
 	lpc.utm_source,
 	lpc.utm_medium,
 	lpc.utm_campaign,
-	coalesce(c.total_cost, 0) as total_cost,
-	count(lpc.lead_id) as leads_count,
+	c.total_cost,
+	count(distinct lpc.lead_id) as leads_count,
 	p.purchases_count,
 	p.revenue
 from last_paid_clicks lpc
@@ -97,7 +97,7 @@ left join costs_by_day c
 	and lpc.utm_medium = c.utm_medium
 	and lpc.utm_campaign = c.utm_campaign
 group by to_char(lpc.visit_date, 'YYYY-MM-DD'), lpc.utm_source, lpc.utm_medium,
-	lpc.utm_campaign,	p.purchases_count, coalesce(c.total_cost, 0),
+	lpc.utm_campaign,	p.purchases_count, c.total_cost,
 	p.revenue
 order by revenue desc nulls last, to_char(lpc.visit_date, 'YYYY-MM-DD'),
 	count(lpc.visitor_id) desc, lpc.utm_source,
