@@ -10,7 +10,7 @@ SELECT
       ) as ntile_days
 from last_paid_clicks;
 
---to analyse if there is any impact on organic visits from ad-campaigns I use folloeing SQL:
+--to analyse if there is any impact on organic visits from ad-campaigns I use following SQL:
 with organic_visits as ( -- counts organic visits per day
 	select
 		date_trunc('day', visit_date) as visit_date,

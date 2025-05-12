@@ -11,9 +11,8 @@ with paid_clicks as (
 		l.closing_reason,
 		l.status_id
 	from sessions s
-	left join leads l on s.visitor_id = l.visitor_id
+	left join leads l on s.visitor_id = l.visitor_id and s.visit_date <= l.created_at
 	where s.medium in ('cpc', 'cpm', 'cpa', 'youtube', 'cpp', 'tg', 'social')
-		--and ((s.visit_date <= l.created_at) or (l.created_at is null))
 ),
 last_date as (
 	select
