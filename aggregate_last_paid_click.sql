@@ -47,7 +47,7 @@ purchases as (
 		count(lead_id) as purchases_count,
 		sum(amount) as revenue
 	from last_paid_clicks
-	where status_id = '142'
+	where status_id = '142' or closing_reason = 'Успешная продажа'
 	group by to_char(visit_date, 'YYYY-MM-DD'), utm_source, utm_medium, utm_campaign
 ),
 costs as (
@@ -77,7 +77,7 @@ costs_by_day as (
 )
 select
 	to_char(lpc.visit_date, 'YYYY-MM-DD') as visit_date,
-	count(lpc.visitor_id) as visitors_count,
+	count(distinct lpc.visitor_id) as visitors_count,
 	lpc.utm_source,
 	lpc.utm_medium,
 	lpc.utm_campaign,
