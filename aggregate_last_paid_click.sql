@@ -101,5 +101,4 @@ group by to_char(lpc.visit_date, 'YYYY-MM-DD'), lpc.utm_source, lpc.utm_medium,
 order by revenue desc nulls last, to_char(lpc.visit_date, 'YYYY-MM-DD'),
 	count(lpc.visitor_id) desc, lpc.utm_source,
 	lpc.utm_medium,
-	lpc.utm_campaign
-limit 15;
+	lpc.utm_campaign;
