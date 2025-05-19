@@ -40,6 +40,6 @@ from paid_clicks
 inner join last_date on paid_clicks.visitor_id = last_date.visitor_id
 where paid_clicks.visit_date = last_date.last_visit_date
 order by
-    amount desc nulls last, visit_date asc, utm_source asc, utm_medium asc, utm_campaign asc;
-
-
+    paid_clicks.amount desc nulls last,
+    visit_date asc, paid_clicks.utm_source asc,
+    paid_clicks.utm_medium asc, paid_clicks.utm_campaign asc;

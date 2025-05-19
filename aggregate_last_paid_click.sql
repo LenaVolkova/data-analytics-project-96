@@ -41,11 +41,11 @@ last_paid_clicks as (
     inner join last_date on paid_clicks.visitor_id = last_date.visitor_id
     where paid_clicks.visit_date = last_date.last_visit_date
     order by
-        amount desc nulls last,
+        paid_clicks.amount desc nulls last,
         visit_date asc,
-        utm_source asc,
-        utm_medium asc,
-        utm_campaign asc
+        paid_clicks.utm_source asc,
+        paid_clicks.utm_medium asc,
+        paid_clicks.utm_campaign asc
 ),
 
 purchases as (
@@ -121,8 +121,7 @@ group by
     lpc.utm_campaign, p.purchases_count, c.total_cost,
     p.revenue
 order by
-    revenue desc nulls last, to_char(lpc.visit_date, 'YYYY-MM-DD'),
+    p.revenue desc nulls last, to_char(lpc.visit_date, 'YYYY-MM-DD'),
     count(lpc.visitor_id) desc, lpc.utm_source,
     lpc.utm_medium asc,
     lpc.utm_campaign asc;
-
