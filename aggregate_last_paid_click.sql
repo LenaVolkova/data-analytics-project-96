@@ -46,7 +46,7 @@ last_paid_clicks as (
 ),
 
 costs_by_day as (
-    select 
+    select
         utm_source,
         utm_medium,
         utm_campaign,
@@ -57,7 +57,7 @@ costs_by_day as (
         to_char(campaign_date, 'YYYY-MM-DD'),
         utm_source,
         utm_medium,
-        utm_campaign	
+        utm_campaign
     union all
     select
         utm_source,
@@ -70,7 +70,7 @@ costs_by_day as (
         to_char(campaign_date, 'YYYY-MM-DD'),
         utm_source,
         utm_medium,
-        utm_campaign	
+        utm_campaign
 )
 
 select
@@ -83,21 +83,21 @@ select
     count(lpc.lead_id) as leads_count,
     sum(
         case
-	        when
-	            lpc.status_id = '142'
-	            or lpc.closing_reason = 'Успешная проадажа'
-	            then 1
-	        else 0
-	    end
-	) as purchases_count,
-	sum(
-	    case
-		    when
-		        lpc.status_id = '142'
-		        or lpc.closing_reason = 'Успешная проадажа'
-		        then lpc.amount
-		    else 0
-		end
+            when
+                lpc.status_id = '142'
+                or lpc.closing_reason = 'Успешная проадажа'
+                then 1
+            else 0
+        end
+    ) as purchases_count,
+    sum(
+        case
+            when
+                lpc.status_id = '142'
+                or lpc.closing_reason = 'Успешная проадажа'
+                then lpc.amount
+            else 0
+       end
     ) as revenue
 from last_paid_clicks as lpc
 left join costs_by_day as c 
