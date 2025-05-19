@@ -100,7 +100,7 @@ select
        end
     ) as revenue
 from last_paid_clicks as lpc
-left join costs_by_day as c 
+left join costs_by_day as c
     on
         to_char(lpc.visit_date, 'YYYY-MM-DD') = c.visit_date
         and lpc.utm_source = c.utm_source
