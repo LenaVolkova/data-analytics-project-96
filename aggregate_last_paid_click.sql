@@ -97,7 +97,7 @@ select
                 or lpc.closing_reason = 'Успешная проадажа'
                 then lpc.amount
             else 0
-       end
+        end
     ) as revenue
 from last_paid_clicks as lpc
 left join costs_by_day as c
