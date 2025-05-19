@@ -18,14 +18,14 @@ with totals as (
 )
 
 select
-    'click to lead' as conversion,
+    'click to lead' as conversion_rate,
     --conversion rate for click to lead
     round((c.quantity) / (l.quantity), 2) as rate
 from totals as c, totals as l
 where c.category = 'visitors' and l.category = 'leads'
 union
 select
-    'lead to purchase' as conversion,
+    'lead to purchase' as conversion_rate,
     -- conversion rate for lead to purchase
     round((l.quantity) / (p.quantity), 2) as rate
 from totals as p, totals as l
@@ -64,4 +64,3 @@ select
     ) as ntile_lead
 from lpc
 where closing_reason in ('Успешная продажа', 'Не реализовано');
-
