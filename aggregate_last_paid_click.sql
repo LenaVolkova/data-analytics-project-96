@@ -94,15 +94,15 @@ costs_by_day as (
 )
 
 select
+    to_char(lpc.visit_date, 'YYYY-MM-DD') as visit_date,
+    count(distinct lpc.visitor_id) as visitors_count,
     lpc.utm_source,
     lpc.utm_medium,
     lpc.utm_campaign,
     c.total_cost,
+    count(distinct lpc.lead_id) as leads_count,
     p.purchases_count,
-    p.revenue,
-    to_char(lpc.visit_date, 'YYYY-MM-DD') as visit_date,
-    count(distinct lpc.visitor_id) as visitors_count,
-    count(distinct lpc.lead_id) as leads_count
+    p.revenue  
 from last_paid_clicks as lpc
 left join purchases as p
     on
